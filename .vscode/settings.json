@@ -1,0 +1,24 @@
+{
+    "cSpell.words": [
+        "canciones",
+        "cargando",
+        "cuando",
+        "declaracion",
+        "dividir",
+        "funcion",
+        "incia",
+        "lista",
+        "mensaje",
+        "muestra",
+        "multiplicacion",
+        "multiplicar",
+        "reproduccion",
+        "restar",
+        "suma",
+        "sumar"
+    ],
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.autopep8"
+    },
+    "python.formatting.provider": "none"
+}
