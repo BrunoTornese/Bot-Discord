@@ -5,8 +5,10 @@ WORKDIR /app
 COPY . /app
 
 RUN pip install -r requirements.txt
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get install -y ffmpeg
+
+# Instalar FFmpeg en la imagen Alpine
+RUN apk update && apk upgrade
+RUN apk add --no-cache ffmpeg
 
 CMD [ "python", "src/index.py" ]
+
