@@ -1,4 +1,3 @@
-
 # Usa la imagen base de Python Alpine
 FROM python:3.11.5-alpine
 
@@ -13,6 +12,9 @@ RUN pip install -r requirements.txt
 
 # Instala Opus y FFmpeg
 RUN apk add --no-cache opus ffmpeg
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y ffmpeg
 
 # Comando para ejecutar el bot
 CMD [ "python", "src/index.py" ]
