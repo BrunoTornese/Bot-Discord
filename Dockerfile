@@ -1,12 +1,12 @@
-FROM python:3.11.5
+
+FROM python:3.11.5-alpine
 
 WORKDIR /app
 
 COPY . /app
 
 RUN pip install -r requirements.txt
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get install -y ffmpeg
+
+RUN apk add --no-cache ffmpeg
 
 CMD [ "python", "src/index.py" ]
