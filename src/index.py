@@ -29,7 +29,7 @@ async def on_ready():
 async def conectar(ctx):
     canal = ctx.author.voice
     if not canal:
-        await ctx.send('Debes estaroo en un canal de voz')
+        await ctx.send('Debes estar en un canal de voz')
         return
     print("Usiario desconectado")
     voice_client = get(bot.voice_clients, guild=ctx.guild)
