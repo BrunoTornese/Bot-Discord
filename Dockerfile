@@ -7,4 +7,4 @@ COPY . /app
 RUN apk add --no-cache ffmpeg
 RUN pip install -r requirements.txt
 
-CMD [ "python", "./src/index.py" ]
+CMD [ "python", "src/index.py" ]
