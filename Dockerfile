@@ -6,7 +6,6 @@ COPY . /app
 
 RUN pip install -r requirements.txt
 
-# Instalar FFmpeg en la imagen Alpine
 RUN apk update && apk upgrade
 RUN apk add --no-cache ffmpeg
 
