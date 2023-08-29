@@ -4,10 +4,9 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pip install -r requirements.txt
-
 RUN apk update && apk upgrade
 RUN apk add --no-cache ffmpeg
 
-CMD [ "python", "src/index.py" ]
+RUN pip install -r requirements.txt
 
+CMD [ "python", "./src/index.py" ]
