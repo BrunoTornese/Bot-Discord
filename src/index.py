@@ -14,7 +14,6 @@ intents = discord.Intents.all()
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-
 lista_canciones = []
 cola_reproduccion = asyncio.Queue()
 
@@ -31,13 +30,16 @@ async def conectar(ctx):
     if not canal:
         await ctx.send('Debes estar en un canal de voz')
         return
-    print("Usiario desconectado")
+    print("Usuario desconectado")
     voice_client = get(bot.voice_clients, guild=ctx.guild)
     if voice_client and voice_client.is_connected():
-        await voice_client.move_to(canal)
+        # Mover al canal actual del autor
+        await voice_client.move_to(canal.channel)
         print("Conectando")
     else:
-        voice_client = await canal.connect()
+        # Conectar al canal actual del autor
+        voice_client = await canal.channel.connect()
+        print("Conectando")
 
 
 @bot.command()
@@ -46,7 +48,6 @@ async def play(ctx, url):
     if not voice_channel:
         await ctx.send("No estás conectado a un canal de voz.")
         return
-
     ffmpeg_path = os.path.join(os.path.dirname(
         os.path.abspath(__file__)), "bin")
     ffmpeg_executable = os.path.join(ffmpeg_path, "ffmpeg.exe")
@@ -93,21 +94,17 @@ async def cancion_terminada(error, ctx):
 
 
 @bot.command()
-async def stop(ctx):  # función para parar el bot
-    playing_audio = bot.playing_audio  # obtiene el objeto de audio
-    if playing_audio:  # si el objeto de audio está activo
-        player = playing_audio['player']  # obtiene el objeto de audio
-        if player.is_playing():  # si el objeto de audio está activo
-            player.pause()  # pausa el objeto de audio
+async def stop(ctx):
+    if ctx.voice_client and ctx.voice_client.is_playing():
+        ctx.voice_client.pause()
+        await ctx.send("Canción pausada.")
 
 
 @bot.command()
-async def resume(ctx):  # función para reanudar el bot
-    playing_audio = bot.playing_audio  # obtiene el objeto de audio
-    if playing_audio:  # si el objeto de audio está activo
-        player = playing_audio['player']  # obtiene el objeto de audio
-        if player.is_paused():  # si el objeto de audio está pausado
-            player.resume()  # reanuda el objeto de audio
+async def resume(ctx):
+    if ctx.voice_client and ctx.voice_client.is_paused():
+        ctx.voice_client.resume()
+        await ctx.send("Canción reanudada.")
 
 
 @bot.command()
