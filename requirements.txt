@@ -1,5 +1,5 @@
 discord==1.7.3
 pytube==15.0.0
 python-dotenv==0.19.1
-yt-dlp==2023.7.6
+youtube_dl== 2021.12.17
 PyNaCl==1.5.0
