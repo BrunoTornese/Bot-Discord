@@ -53,7 +53,7 @@ FFMPEG_OPTIONS = {
 async def play(ctx, url):
     voice_channel = ctx.author.voice.channel
     if not voice_channel:
-        await ctx.send("No estás conectado a un canal de voz.")
+        await ctx.send("Debes estar en un canal de voz para usar este comando.")
         return
 
     try:
@@ -92,7 +92,12 @@ async def play(ctx, url):
             await cola_reproduccion.put(source)
         else:
             await ctx.send("Canción en reproducción.")
+
+            # Descargar completamente la primera canción antes de agregarla a la cola
+            await source.download()  # Esperar a que se descargue
+
             lista_canciones.append(source)
+
             if not ctx.voice_client and lista_canciones:
                 voice_client = await voice_channel.connect()
                 player = voice_client.play(
@@ -100,16 +105,6 @@ async def play(ctx, url):
                     after=lambda e: bot.loop.create_task(
                         cancion_terminada(e, ctx))
                 )
-                # Pequeña pausa para dar tiempo a la conexión
-                await asyncio.sleep(1)
-
-                if voice_client.is_playing():
-                    return  # Si la canción ya está reproduciéndose, no necesitas continuar
-
-                # Si no está reproduciendo, inicia la reproducción
-                source = lista_canciones[0]
-                ctx.voice_client.play(
-                    source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
 
     except Exception as e:
         await ctx.send(f"Ocurrió un error al reproducir la canción: {e}")
