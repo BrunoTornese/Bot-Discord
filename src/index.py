@@ -100,6 +100,17 @@ async def play(ctx, url):
                     after=lambda e: bot.loop.create_task(
                         cancion_terminada(e, ctx))
                 )
+                # Pequeña pausa para dar tiempo a la conexión
+                await asyncio.sleep(1)
+
+                if voice_client.is_playing():
+                    return  # Si la canción ya está reproduciéndose, no necesitas continuar
+
+                # Si no está reproduciendo, inicia la reproducción
+                source = lista_canciones[0]
+                ctx.voice_client.play(
+                    source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
+
     except Exception as e:
         await ctx.send(f"Ocurrió un error al reproducir la canción: {e}")
 
