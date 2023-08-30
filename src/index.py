@@ -4,28 +4,26 @@ import discord
 from discord.ext import commands
 from discord.utils import get
 from dotenv import load_dotenv
-import pytube
+import yt_dlp
 
-# Cargar el token del bot desde el archivo .env
+# Cargar el token del bot
 load_dotenv()
 TOKEN = os.getenv('discord_token')
 
-# Configuración de las intenciones del bot
 intents = discord.Intents.all()
 intents.members = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# Listas para manejar la cola de reproducción
 lista_canciones = []
 cola_reproduccion = asyncio.Queue()
 
-# Evento que se ejecuta cuando el bot está listo
+# Evento de bot listo
 
 
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='Con ! usas los comandos'))
-    print('El Bot Está Listo')
+    print('El Bot Esta Listo')
 
 # Comando para conectar el bot a un canal de voz
 
@@ -36,7 +34,6 @@ async def conectar(ctx):
     if not canal:
         await ctx.send('Debes estar en un canal de voz')
         return
-
     voice_client = get(bot.voice_clients, guild=ctx.guild)
     if voice_client and voice_client.is_connected():
         await voice_client.move_to(canal)
@@ -44,6 +41,12 @@ async def conectar(ctx):
         voice_client = await canal.connect()
 
 # Comando para reproducir una canción
+
+    # Opciones para FFMPEG
+FFMPEG_OPTIONS = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+    'options': '-vn',
+}
 
 
 @bot.command()
@@ -53,25 +56,42 @@ async def play(ctx, url):
         await ctx.send("No estás conectado a un canal de voz.")
         return
 
-    # Obtener información del video de YouTube
-    video = pytube.YouTube(url)
-    audio = video.streams.filter(only_audio=True).first()
-    audio_file = audio.download()
+    YTDLP_OPTIONS = {
+        'format': 'bestaudio/best',
+        'extractaudio': True,
+        'audioformat': 'mp3',
+        'restrictfilenames': True,
+        'noplaylist': True,
+        'nocheckcertificate': True,
+        'ignoreerrors': False,
+        'logtostderr': False,
+        'quiet': True,
+        'no_warnings': True,
+        'default_search': 'auto',
+        'source_address': '0.0.0.0',
+    }
 
-    # Manejo de la cola de reproducción
+    with yt_dlp.YoutubeDL(YTDLP_OPTIONS) as ydl:
+        info = ydl.extract_info(url, download=False)
+        playUrl = info['url']
+
     if ctx.voice_client and ctx.voice_client.is_playing():
         await ctx.send("Canción agregada a la cola de reproducción.")
-        await cola_reproduccion.put(audio_file)
+        await cola_reproduccion.put(playUrl)
     else:
         await ctx.send("Canción en reproducción.")
-        lista_canciones.append(audio_file)
+        lista_canciones.append(playUrl)
         if not ctx.voice_client and lista_canciones:
             voice_client = await voice_channel.connect()
-            source = discord.FFmpegPCMAudio(lista_canciones[0])
+            source = discord.FFmpegPCMAudio(
+                lista_canciones[0],
+                before_options=FFMPEG_OPTIONS['before_options'],
+                options=FFMPEG_OPTIONS['options']
+            )
             player = voice_client.play(
                 source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
 
-# Función para manejar la finalización de una canción
+# Función para manejar la terminación de una canción
 
 
 async def cancion_terminada(error, ctx):
@@ -82,13 +102,21 @@ async def cancion_terminada(error, ctx):
         lista_canciones.pop(0)
 
     if lista_canciones:
-        source = discord.FFmpegPCMAudio(lista_canciones[0])
+        source = discord.FFmpegPCMAudio(
+            lista_canciones[0],
+            before_options=FFMPEG_OPTIONS['before_options'],
+            options=FFMPEG_OPTIONS['options']
+        )
         ctx.voice_client.play(
             source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
     elif not lista_canciones and not cola_reproduccion.empty():
         cancion = await cola_reproduccion.get()
         lista_canciones.append(cancion)
-        source = discord.FFmpegPCMAudio(lista_canciones[0])
+        source = discord.FFmpegPCMAudio(
+            lista_canciones[0],
+            before_options=FFMPEG_OPTIONS['before_options'],
+            options=FFMPEG_OPTIONS['options']
+        )
         ctx.voice_client.play(
             source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
     else:
