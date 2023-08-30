@@ -26,9 +26,8 @@ FFMPEG_OPTIONS = {
     'options': '-vn',
 }
 
+
 # Evento de bot listo
-
-
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='Con ! usas los comandos'))
@@ -59,9 +58,8 @@ async def descargar_cancion(url):
 
     return discord.FFmpegPCMAudio(source=playUrl, **FFMPEG_OPTIONS)
 
+
 # Función para reproducir una canción descargada
-
-
 async def reproducir_cancion(ctx, source):
     voice_client = ctx.voice_client
 
@@ -80,9 +78,8 @@ async def reproducir_cancion(ctx, source):
                 after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx))
             )
 
+
 # Comando para reproducir una canción
-
-
 @bot.command()
 async def play(ctx, url):
     voice_channel = ctx.author.voice.channel
@@ -103,8 +100,6 @@ async def play(ctx, url):
 
 
 # Función para manejar la terminación de una canción
-
-
 async def cancion_terminada(error, ctx):
     if error:
         print(f"Error en la canción: {error}")
@@ -157,11 +152,9 @@ async def skip(ctx, amount: int = 1):
     if not ctx.voice_client:  # si no esta conectado a un canal de voz
         # envia el mensaje de error
         return await ctx.send("No estoy conectado a un canal de voz.")
-
     if not cola_reproduccion:  # si no hay canciones en la cola de reproducción
         # envia un mensaje de error
         return await ctx.send("No hay canciones en la cola de reproducción.")
-
     else:  # si hay canciones en la cola de reproducción
         ctx.voice_client.stop()  # parar el bot
         for i in range(amount - 1):  # para cada canción en la cola de reproducción
