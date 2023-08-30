@@ -50,7 +50,6 @@ FFMPEG_OPTIONS = {
 }
 
 
-# Comando para reproducir una canción
 @bot.command()
 async def play(ctx, url):
     voice_channel = ctx.author.voice.channel
@@ -102,9 +101,21 @@ async def play(ctx, url):
                     after=lambda e: bot.loop.create_task(
                         cancion_terminada(e, ctx))
                 )
-
     except Exception as e:
         await ctx.send(f"Ocurrió un error al reproducir la canción: {e}")
+
+    # Verificar si hay canciones en la cola y reproducir la siguiente si es necesario
+    if not ctx.voice_client.is_playing() and not cola_reproduccion.empty():
+        cancion = await cola_reproduccion.get()
+        lista_canciones.append(cancion)
+        source = discord.FFmpegPCMAudio(
+            lista_canciones[0],
+            before_options=FFMPEG_OPTIONS['before_options'],
+            options=FFMPEG_OPTIONS['options']
+        )
+        ctx.voice_client.play(
+            source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
+
 
 # Función para manejar la terminación de una canción
 
