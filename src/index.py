@@ -152,7 +152,6 @@ async def resume(ctx):  # función para reanudar el bot
             player.resume()  # reanuda el objeto de audio
 
 
-@bot.command()
 async def skip(ctx, amount: int = 1):
     if not ctx.voice_client:  # si no esta conectado a un canal de voz
         # envia el mensaje de error
@@ -166,7 +165,10 @@ async def skip(ctx, amount: int = 1):
         ctx.voice_client.stop()  # parar el bot
         for i in range(amount - 1):  # para cada canción en la cola de reproducción
             # obtiene el siguiente elemento de la cola de reproducción y si no hay da una exepcion
-            cola_reproduccion.get_nowait()
+            cancion = await cola_reproduccion.get(timeout=1)
+            if not cancion:
+                break
+            cola_reproduccion.task_done()
         await ctx.send(f"Saltando la cancion.")
 
 
