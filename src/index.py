@@ -161,15 +161,17 @@ async def skip(ctx, amount: int = 1):
         # envia un mensaje de error
         return await ctx.send("No hay canciones en la cola de reproducción.")
 
-    else:  # si hay canciones en la cola de reproducción
-        ctx.voice_client.stop()  # parar el bot
-        for i in range(amount - 1):  # para cada canción en la cola de reproducción
-            # obtiene el siguiente elemento de la cola de reproducción y si no hay da una exepcion
-            cancion = await cola_reproduccion.get(timeout=1)
-            if not cancion:
-                break
-            cola_reproduccion.task_done()
-        await ctx.send(f"Saltando la cancion.")
+    # para cada canción en la cola de reproducción
+    for i in range(amount - 1):
+        # obtiene el siguiente elemento de la cola de reproducción y si no hay da una exepcion
+        cancion = await cola_reproduccion.get(timeout=1)
+        if not cancion:
+            break
+        cola_reproduccion.task_done()
+
+    # parar el bot
+    ctx.voice_client.stop()
+    await ctx.send(f"Saltando la cancion.")
 
 
 @bot.command()
