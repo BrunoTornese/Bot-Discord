@@ -57,6 +57,7 @@ async def play(ctx, url):
         await ctx.send("No estás conectado a un canal de voz.")
         return
 
+    # Opciones para yt-dlp
     YTDLP_OPTIONS = {
         'format': 'bestaudio/best',
         'extractaudio': True,
@@ -72,16 +73,19 @@ async def play(ctx, url):
         'source_address': '0.0.0.0',
     }
 
+    # Extraer la URL de reproducción de yt-dlp
     with yt_dlp.YoutubeDL(YTDLP_OPTIONS) as ydl:
         info = ydl.extract_info(url, download=False)
         playUrl = info['url']
 
-    # Aplicar opciones de FFMPEG
-    source = FFmpegPCMAudio(
-        source=playUrl,
-        before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
-        options="-vn"
-    )
+    # Configurar opciones de FFMPEG para la reproducción
+    ffmpeg_options = {
+        'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
+        'options': '-vn',
+    }
+
+    # Crear el objeto de audio con las opciones de FFMPEG
+    source = FFmpegPCMAudio(source=playUrl, **ffmpeg_options)
 
     if ctx.voice_client and ctx.voice_client.is_playing():
         await ctx.send("Canción agregada a la cola de reproducción.")
@@ -95,9 +99,9 @@ async def play(ctx, url):
                 lista_canciones[0],
                 after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx))
             )
-
-
 # Función para manejar la terminación de una canción
+
+
 async def cancion_terminada(error, ctx):
     if error:
         print(f"Error en la canción: {error}")
