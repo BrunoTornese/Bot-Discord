@@ -34,7 +34,32 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='Con ! usas los comandos'))
     print('El Bot Está Listo')
 
-# Función para descargar y reproducir la canción
+
+# Función para descargar la canción
+async def descargar_cancion(url):
+    ytdlp_options = {
+        'format': 'bestaudio/best',
+        'extractaudio': True,
+        'audioformat': 'mp3',
+        'restrictfilenames': True,
+        'noplaylist': True,
+        'nocheckcertificate': True,
+        'ignoreerrors': False,
+        'logtostderr': False,
+        'quiet': True,
+        'no_warnings': True,
+        'default_search': 'auto',
+        'source_address': '0.0.0.0',
+    }
+
+    # Obtener la URL de reproducción usando yt-dlp y descargar la canción
+    with yt_dlp.YoutubeDL(ytdlp_options) as ydl:
+        info = ydl.extract_info(url, download=True)
+        playUrl = info['url']
+
+    return discord.FFmpegPCMAudio(source=playUrl, **FFMPEG_OPTIONS)
+
+# Función para reproducir una canción descargada
 
 
 async def reproducir_cancion(ctx, source):
@@ -67,30 +92,10 @@ async def play(ctx, url):
         return
 
     try:
-        # Opciones para yt-dlp para obtener la URL de reproducción
-        ytdlp_options = {
-            'format': 'bestaudio/best',
-            'extractaudio': True,
-            'audioformat': 'mp3',
-            'restrictfilenames': True,
-            'noplaylist': True,
-            'nocheckcertificate': True,
-            'ignoreerrors': False,
-            'logtostderr': False,
-            'quiet': True,
-            'no_warnings': True,
-            'default_search': 'auto',
-            'source_address': '0.0.0.0',
-        }
+        # Descargar la canción
+        source = await descargar_cancion(url)
 
-        # Obtener la URL de reproducción usando yt-dlp
-        with yt_dlp.YoutubeDL(ytdlp_options) as ydl:
-            info = ydl.extract_info(url, download=False)
-            playUrl = info['url']
-
-        # Crear el objeto de audio con FFMPEG
-        source = discord.FFmpegPCMAudio(source=playUrl, **FFMPEG_OPTIONS)
-
+        # Reproducir la canción
         await reproducir_cancion(ctx, source)
 
     except Exception as e:
