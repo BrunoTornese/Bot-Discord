@@ -1,6 +1,7 @@
 import os
 import asyncio
 import discord
+from discord import FFmpegPCMAudio
 from discord.ext import commands
 from discord.utils import get
 from dotenv import load_dotenv
@@ -75,25 +76,28 @@ async def play(ctx, url):
         info = ydl.extract_info(url, download=False)
         playUrl = info['url']
 
+    # Aplicar opciones de FFMPEG
+    source = FFmpegPCMAudio(
+        source=playUrl,
+        before_options="-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+        options="-vn"
+    )
+
     if ctx.voice_client and ctx.voice_client.is_playing():
         await ctx.send("Canción agregada a la cola de reproducción.")
-        await cola_reproduccion.put(playUrl)
+        await cola_reproduccion.put(source)
     else:
         await ctx.send("Canción en reproducción.")
-        lista_canciones.append(playUrl)
+        lista_canciones.append(source)
         if not ctx.voice_client and lista_canciones:
             voice_client = await voice_channel.connect()
-            source = discord.FFmpegPCMAudio(
-                lista_canciones[0],
-                before_options=FFMPEG_OPTIONS['before_options'],
-                options=FFMPEG_OPTIONS['options']
-            )
             player = voice_client.play(
-                source, after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx)))
+                lista_canciones[0],
+                after=lambda e: bot.loop.create_task(cancion_terminada(e, ctx))
+            )
+
 
 # Función para manejar la terminación de una canción
-
-
 async def cancion_terminada(error, ctx):
     if error:
         print(f"Error en la canción: {error}")
