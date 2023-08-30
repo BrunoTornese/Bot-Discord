@@ -1,4 +1,4 @@
 discord==1.7.3
 pytube==15.0.0
 python-dotenv==0.19.1
-yt-dlp==2022.10.20
+yt-dlp==2023.8.20
