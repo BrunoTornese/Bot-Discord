@@ -20,15 +20,16 @@ cola_reproduccion = asyncio.Queue()
 
 # Evento de bot listo
 
+# Comando para conectar el bot a un canal de voz
+
 
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online, activity=discord.Game(name='Con ! usas los comandos'))
     print('El Bot Esta Listo')
 
-# Comando para conectar el bot a un canal de voz
 
-
+# Comando para reproducir una canción
 @bot.command(pass_context=True)
 async def conectar(ctx):
     canal = ctx.author.voice
@@ -41,9 +42,7 @@ async def conectar(ctx):
     else:
         voice_client = await canal.connect()
 
-# Comando para reproducir una canción
-
-    # Opciones para FFMPEG
+# Opciones para FFMPEG
 FFMPEG_OPTIONS = {
     'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn',
