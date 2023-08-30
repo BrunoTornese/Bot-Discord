@@ -4,7 +4,9 @@ WORKDIR /app
 
 COPY . /app
 
-RUN apt-get update && apt-get install -y ffmpeg && rm -rf /var/lib/apt/lists/*
 RUN pip install -r requirements.txt
+RUN apt-get -y update
+RUN apt-get -y upgrade
+RUN apt-get install -y ffmpeg
 
 CMD [ "python", "./src/index.py" ]
